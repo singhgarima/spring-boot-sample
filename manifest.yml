@@ -1,6 +1,8 @@
 ---
 applications:
 - name: spring-boot
-  memory: 512MB
+  memory: 1GB
   random-route: true
   path: target/spring-boot-1.0-SNAPSHOT.jar
+  services:
+    attendee-mysql
