@@ -1,4 +1,4 @@
-package io.pivotal.workshop;
+package io.pivotal.workshop.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
