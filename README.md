@@ -5,4 +5,4 @@
 * /
 * /home
 * /snippets
-* actuators: /mappings, /metrics, /health
+* actuators: /actuators/mappings, /actuators/metrics, /actuators/health
