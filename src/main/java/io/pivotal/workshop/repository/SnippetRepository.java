@@ -1,50 +1,55 @@
-package io.pivotal.workshop.repository;
+package io.pivotal.workshop;
 
 import io.pivotal.workshop.model.NewSnippetFields;
 import io.pivotal.workshop.model.SnippetRecord;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.sql.*;
 import java.util.List;
 
 import static java.util.UUID.randomUUID;
 
-
 @Repository
 public class SnippetRepository {
 
-    private List<SnippetRecord> snippets = new ArrayList<SnippetRecord>() {
-        {
-            add(buildRecord("JavaScript: Hello World", "console.log('Hello World!');"));
-            add(buildRecord("HTML: Hello World", "<html><body><h1>Hello World</h1></body></html>"));
-            add(buildRecord("Bash: Hello World", "echo \"Hello World\""));
-            add(buildRecord("Python: Hello World", "print \"Hello World\""));
-        }
-    };
+    private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<SnippetRecord> rowMapper = (ResultSet rs, int row) -> new SnippetRecord(
+            rs.getString("id"),
+            rs.getString("title"),
+            rs.getString("code"),
+            rs.getDate("created").toLocalDate(),
+            rs.getDate("modified").toLocalDate()
+    );
 
-    public SnippetRecord save(NewSnippetFields snippetFields) {
-        SnippetRecord newRecord = buildRecord(snippetFields.title, snippetFields.code);
-        this.snippets.add(newRecord);
-        return newRecord;
+    public SnippetRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
+
+
+    private final String SQL_INSERT = "insert into snippet (id, title, code, created, modified)" +
+            " values(?, ?, ?, now(), now())";
+
+    public SnippetRecord save(NewSnippetFields newSnippetFields) {
+        String newId = randomUUID().toString();
+
+        jdbcTemplate.update(SQL_INSERT, newId, newSnippetFields.title, newSnippetFields.code);
+
+        return findOne(newId);
+    }
+
+
+    private final String SQL_QUERY_ALL = "select * from snippet";
 
     public List<SnippetRecord> findAll() {
-        return snippets;
-    }
-
-    public SnippetRecord findById(String id) {
-        return snippets.stream()
-                .filter(snippet -> snippet.id.equals(id))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("There is no snippet with id: "+id));
+        return jdbcTemplate.query(SQL_QUERY_ALL, rowMapper);
     }
 
 
-    private SnippetRecord buildRecord(String title, String code) {
-        String newId = randomUUID().toString();
-        LocalDate now = LocalDate.now();
+    private final String SQL_QUERY_BY_ID = "select * from snippet where id = ?";
 
-        return new SnippetRecord(newId, title, code, now, now);
+    public SnippetRecord findOne(String id) {
+        return jdbcTemplate.queryForObject(SQL_QUERY_BY_ID, new Object[]{id}, rowMapper);
     }
 }

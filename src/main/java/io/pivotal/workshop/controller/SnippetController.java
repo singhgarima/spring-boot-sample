@@ -4,7 +4,6 @@ import io.pivotal.workshop.model.NewSnippetFields;
 import io.pivotal.workshop.model.SnippetInfo;
 import io.pivotal.workshop.model.SnippetPresenter;
 import io.pivotal.workshop.model.SnippetRecord;
-import io.pivotal.workshop.repository.SnippetRepository;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -18,10 +17,10 @@ import static java.util.stream.Collectors.toList;
 @RequestMapping("/snippets")
 public class SnippetController {
 
-    private final SnippetRepository snippetRepository;
+    private final io.pivotal.workshop.SnippetRepository snippetRepository;
     private final SnippetPresenter snippetPresenter;
 
-    public SnippetController(SnippetRepository snippetRepository, SnippetPresenter snippetPresenter) {
+    public SnippetController(io.pivotal.workshop.SnippetRepository snippetRepository, SnippetPresenter snippetPresenter) {
         this.snippetRepository = snippetRepository;
         this.snippetPresenter = snippetPresenter;
     }
@@ -37,7 +36,7 @@ public class SnippetController {
 
     @GetMapping("/{id}")
     public SnippetInfo snippet(@PathVariable("id") String id) {
-        SnippetRecord record = snippetRepository.findById(id);
+        SnippetRecord record = snippetRepository.findOne(id);
         return snippetPresenter.present(record);
     }
 
